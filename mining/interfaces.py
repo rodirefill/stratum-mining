@@ -42,10 +42,10 @@ class ShareManagerInterface(object):
         pass
 
     def on_submit_share(self, worker_name, block_header, block_hash, shares, timestamp, is_valid):
-        log.info("%s %s %s" % (block_hash, 'valid' if is_valid else 'INVALID', worker_name))
+        log.info(f"{block_hash} {'valid' if is_valid else 'INVALID'} {worker_name}")
 
     def on_submit_block(self, is_accepted, worker_name, block_header, block_hash, timestamp):
-        log.info("Block %s %s" % (block_hash, 'ACCEPTED' if is_accepted else 'REJECTED'))
+        log.info(f"Block {block_hash} {'ACCEPTED' if is_accepted else 'REJECTED'}")
 
 class TimestamperInterface(object):
     '''This is the only source for current time in the application.

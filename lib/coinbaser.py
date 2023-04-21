@@ -28,17 +28,17 @@ class SimpleCoinbaser(object):
     def _address_check(self, result):
         if result['isvalid'] and result['ismine']:
             self.is_valid = True
-            log.info("Coinbase address '%s' is valid" % self.address)
+            log.info(f"Coinbase address '{self.address}' is valid")
 
             if not self.on_load.called:
                 self.on_load.callback(True)
 
         else:
             self.is_valid = False
-            log.error("Coinbase address '%s' is NOT valid!" % self.address)
+            log.error(f"Coinbase address '{self.address}' is NOT valid!")
 
     def _failure(self, failure):
-        log.error("Cannot validate Bitcoin address '%s'" % self.address)
+        log.error(f"Cannot validate Bitcoin address '{self.address}'")
         raise
 
     #def on_new_block(self):

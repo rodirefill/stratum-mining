@@ -89,7 +89,7 @@ class TemplateRegistry(object):
             if ph != prevhash:
                 del self.prevhashes[ph]
 
-        log.info("New template for %s" % prevhash)
+        log.info(f"New template for {prevhash}")
 
         if new_block:
             # Tell the system about new block
@@ -145,18 +145,18 @@ class TemplateRegistry(object):
         try:
             j = self.jobs[job_id]
         except:
-            log.info("Job id '%s' not found" % job_id)
+            log.info(f"Job id '{job_id}' not found")
             return None
 
         # Now we have to check if job is still valid.
         # Unfortunately weak references are not bulletproof and
         # old reference can be found until next run of garbage collector.
         if j.prevhash_hex not in self.prevhashes:
-            log.info("Prevhash of job '%s' is unknown" % job_id)
+            log.info(f"Prevhash of job '{job_id}' is unknown")
             return None
 
         if j not in self.prevhashes[j.prevhash_hex]:
-            log.info("Job %s is unknown" % job_id)
+            log.info(f"Job {job_id} is unknown")
             return None
 
         return j
@@ -179,8 +179,8 @@ class TemplateRegistry(object):
 
         # Check for job
         job = self.get_job(job_id)
-        if job == None:
-            raise SubmitException("Job '%s' not found" % job_id)
+        if job is None:
+            raise SubmitException(f"Job '{job_id}' not found")
 
         # Check if ntime looks correct
         if len(ntime) != 8:
@@ -200,8 +200,9 @@ class TemplateRegistry(object):
 
         # Check for duplicated submit
         if not job.register_submit(extranonce1_bin, extranonce2_bin, ntime_bin, nonce_bin):
-            log.info("Duplicate from %s, (%s %s %s %s)" % \
-                    (worker_name, binascii.hexlify(extranonce1_bin), extranonce2, ntime, nonce))
+            log.info(
+                f"Duplicate from {worker_name}, ({binascii.hexlify(extranonce1_bin)} {extranonce2} {ntime} {nonce})"
+            )
             raise SubmitException("Duplicate share")
 
         # Now let's do the hard work!
@@ -219,7 +220,9 @@ class TemplateRegistry(object):
         header_bin = job.serialize_header(merkle_root_int, ntime_bin, nonce_bin)
 
         # 4. Reverse header and compare it with target of the user
-        hash_bin = util.doublesha(''.join([ header_bin[i*4:i*4+4][::-1] for i in range(0, 20) ]))
+        hash_bin = util.doublesha(
+            ''.join([header_bin[i * 4 : i * 4 + 4][::-1] for i in range(20)])
+        )
         hash_int = util.uint256_from_str(hash_bin)
         block_hash_hex = "%064x" % hash_int
         header_hex = binascii.hexlify(header_bin)
@@ -236,7 +239,7 @@ class TemplateRegistry(object):
         # 5. Compare hash with target of the network
         if hash_int <= job.target:
             # Yay! It is block candidate!
-            log.info("We found a block candidate! %s" % block_hash_hex)
+            log.info(f"We found a block candidate! {block_hash_hex}")
 
             # 6. Finalize and serialize block object
             job.finalize(merkle_root_int, extranonce1_bin, extranonce2_bin, int(ntime, 16), int(nonce, 16))
