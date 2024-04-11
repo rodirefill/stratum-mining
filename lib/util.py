@@ -66,7 +66,7 @@ def deser_vector(f, c):
     elif nit == 255:
         nit = struct.unpack("<Q", f.read(8))[0]
     r = []
-    for i in xrange(nit):
+    for _ in xrange(nit):
         t = c()
         t.deserialize(f)
         r.append(t)
@@ -95,7 +95,7 @@ def deser_uint256_vector(f):
     elif nit == 255:
         nit = struct.unpack("<Q", f.read(8))[0]
     r = []
-    for i in xrange(nit):
+    for _ in xrange(nit):
         t = deser_uint256(f)
         r.append(t)
     return r
@@ -168,10 +168,7 @@ def address_to_pubkeyhash(addr):
     cksumA = addr[-4:]
     cksumB = doublesha(addr[:-4])[:4]
 
-    if cksumA != cksumB:
-        return None
-
-    return (ver, addr[1:-4])
+    return None if cksumA != cksumB else (ver, addr[1:-4])
 
 def ser_uint256_be(u):
     '''ser_uint256 to big endian'''

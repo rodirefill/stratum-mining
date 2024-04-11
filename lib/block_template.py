@@ -143,12 +143,7 @@ class BlockTemplate(halfnode.CBlock):
         if ntime < self.curtime:
             return False
 
-        if ntime > (self.timestamper.time() + 1000):
-            # Be strict on ntime into the near future
-            # may be unnecessary
-            return False
-
-        return True
+        return ntime <= self.timestamper.time() + 1000
 
     def serialize_header(self, merkle_root_int, ntime_bin, nonce_bin):
         '''Serialize header for calculating block hash'''
@@ -171,8 +166,7 @@ class BlockTemplate(halfnode.CBlock):
         self.sha256 = None # We changed block parameters, let's reset sha256 cache
 
     def serialize(self):
-        r = []
-        r.append(struct.pack("<i", self.nVersion))
+        r = [struct.pack("<i", self.nVersion)]
         r.append(util.ser_uint256(self.hashPrevBlock))
         r.append(util.ser_uint256(self.hashMerkleRoot))
         r.append(struct.pack("<I", self.nTime))
@@ -186,10 +180,11 @@ class BlockTemplate(halfnode.CBlock):
         target = util.uint256_from_compact(self.nBits)
         if self.sha256 > self.target:
             return False
-        hashes = []
-        hashes.append(b'\0' * 0x20)
-        for tx in self.vtx[1:]:
-            hashes.append(SHA256.new(SHA256.new(tx.serialize()).digest()).digest())
+        hashes = [b'\0' * 0x20]
+        hashes.extend(
+            SHA256.new(SHA256.new(tx.serialize()).digest()).digest()
+            for tx in self.vtx[1:]
+        )
         while len(hashes) > 1:
             newhashes = []
             for i in xrange(0, len(hashes), 2):
@@ -197,6 +192,4 @@ class BlockTemplate(halfnode.CBlock):
                 newhashes.append(SHA256.new(SHA256.new(hashes[i] + hashes[i2]).digest()).digest())
             hashes = newhashes
         calcwitness = SHA256.new(SHA256.new(hashes[0] + witness_nonce).digest()).digest()
-        if calcwitness != self.witness:
-            return False
-        return True
+        return calcwitness == self.witness

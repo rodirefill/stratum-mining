@@ -16,10 +16,10 @@ class BitcoinRPC(object):
 
     def __init__(self, host, port, username, password):
         self.bitcoin_url = 'http://%s:%d' % (host, port)
-        self.credentials = base64.b64encode("%s:%s" % (username, password))
+        self.credentials = base64.b64encode(f"{username}:{password}")
         self.headers = {
             'Content-Type': 'text/json',
-            'Authorization': 'Basic %s' % self.credentials,
+            'Authorization': f'Basic {self.credentials}',
         }
 
     def _call_raw(self, data):
@@ -41,7 +41,7 @@ class BitcoinRPC(object):
     @defer.inlineCallbacks
     def submitblock(self, block_hex):
         resp = (yield self._call('submitblock', [block_hex,]))
-        if json.loads(resp)['result'] == None:
+        if json.loads(resp)['result'] is None:
             defer.returnValue(True)
         else:
             defer.returnValue(False)
@@ -62,7 +62,7 @@ class BitcoinRPC(object):
         try:
             defer.returnValue(json.loads(resp)['result'])
         except Exception as e:
-            log.exception("Cannot decode prevhash %s" % str(e))
+            log.exception(f"Cannot decode prevhash {str(e)}")
             raise
 
     @defer.inlineCallbacks

@@ -179,8 +179,7 @@ class CBlock(object):
         self.nNonce = struct.unpack("<I", f.read(4))[0]
         self.vtx = deser_vector(f, CTransaction)
     def serialize(self):
-        r = []
-        r.append(struct.pack("<i", self.nVersion))
+        r = [struct.pack("<i", self.nVersion)]
         r.append(ser_uint256(self.hashPrevBlock))
         r.append(ser_uint256(self.hashMerkleRoot))
         r.append(struct.pack("<I", self.nTime))
@@ -190,8 +189,7 @@ class CBlock(object):
         return ''.join(r)
     def calc_sha256(self):
         if self.sha256 is None:
-            r = []
-            r.append(struct.pack("<i", self.nVersion))
+            r = [struct.pack("<i", self.nVersion)]
             r.append(ser_uint256(self.hashPrevBlock))
             r.append(ser_uint256(self.hashMerkleRoot))
             r.append(struct.pack("<I", self.nTime))
@@ -220,9 +218,7 @@ class CBlock(object):
                 newhashes.append(SHA256.new(SHA256.new(hashes[i] + hashes[i2]).digest()).digest())
             hashes = newhashes
 
-        if uint256_from_str(hashes[0]) != self.hashMerkleRoot:
-            return False
-        return True
+        return uint256_from_str(hashes[0]) == self.hashMerkleRoot
     def __repr__(self):
         return "CBlock(nVersion=%i hashPrevBlock=%064x hashMerkleRoot=%064x nTime=%s nBits=%08x nNonce=%08x vtx=%s)" % (self.nVersion, self.hashPrevBlock, self.hashMerkleRoot, time.ctime(self.nTime), self.nBits, self.nNonce, repr(self.vtx))
 
@@ -252,8 +248,7 @@ class msg_version(object):
         self.strSubVer = deser_string(f)
         self.nStartingHeight = struct.unpack("<i", f.read(4))[0]
     def serialize(self):
-        r = []
-        r.append(struct.pack("<i", self.nVersion))
+        r = [struct.pack("<i", self.nVersion)]
         r.append(struct.pack("<Q", self.nServices))
         r.append(struct.pack("<q", self.nTime))
         r.append(self.addrTo.serialize())
@@ -285,7 +280,7 @@ class msg_addr(object):
     def serialize(self):
         return ser_vector(self.addrs)
     def __repr__(self):
-        return "msg_addr(addrs=%s)" % (repr(self.addrs))
+        return f"msg_addr(addrs={repr(self.addrs)})"
 
 class msg_inv(object):
     command = "inv"
@@ -296,7 +291,7 @@ class msg_inv(object):
     def serialize(self):
         return ser_vector(self.inv)
     def __repr__(self):
-        return "msg_inv(inv=%s)" % (repr(self.inv))
+        return f"msg_inv(inv={repr(self.inv)})"
 
 class msg_getdata(object):
     command = "getdata"
@@ -307,7 +302,7 @@ class msg_getdata(object):
     def serialize(self):
         return ser_vector(self.inv)
     def __repr__(self):
-        return "msg_getdata(inv=%s)" % (repr(self.inv))
+        return f"msg_getdata(inv={repr(self.inv)})"
 
 class msg_getblocks(object):
     command = "getblocks"
@@ -319,8 +314,7 @@ class msg_getblocks(object):
         self.locator.deserialize(f)
         self.hashstop = deser_uint256(f)
     def serialize(self):
-        r = []
-        r.append(self.locator.serialize())
+        r = [self.locator.serialize()]
         r.append(ser_uint256(self.hashstop))
         return ''.join(r)
     def __repr__(self):
@@ -335,7 +329,7 @@ class msg_tx(object):
     def serialize(self):
         return self.tx.serialize()
     def __repr__(self):
-        return "msg_tx(tx=%s)" % (repr(self.tx))
+        return f"msg_tx(tx={repr(self.tx)})"
 
 class msg_block(object):
     command = "block"
@@ -346,7 +340,7 @@ class msg_block(object):
     def serialize(self):
         return self.block.serialize()
     def __repr__(self):
-        return "msg_block(block=%s)" % (repr(self.block))
+        return f"msg_block(block={repr(self.block)})"
 
 class msg_getaddr(object):
     command = "getaddr"
@@ -492,7 +486,7 @@ class BitcoinP2PProtocol(Protocol):
         if self.last_sent + 30 * 60 < time.time():
             self.send_message(msg_ping())
 
-        mname = 'do_' + message.command
+        mname = f'do_{message.command}'
         #print mname
         if not hasattr(self, mname):
             return

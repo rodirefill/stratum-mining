@@ -30,9 +30,11 @@ class BlockUpdater(object):
         self.clock = reactor.callLater(when, self.run)
 
     def _get_next_time(self):
-        when = settings.PREVHASH_REFRESH_INTERVAL - (Interfaces.timestamper.time() - self.registry.last_update) % \
-               settings.PREVHASH_REFRESH_INTERVAL
-        return when
+        return (
+            settings.PREVHASH_REFRESH_INTERVAL
+            - (Interfaces.timestamper.time() - self.registry.last_update)
+            % settings.PREVHASH_REFRESH_INTERVAL
+        )
 
     @defer.inlineCallbacks
     def run(self):
@@ -46,11 +48,11 @@ class BlockUpdater(object):
 
             prevhash = yield self.bitcoin_rpc.prevhash()
             if prevhash and prevhash != current_prevhash:
-                log.info("New block! Prevhash: %s" % prevhash)
+                log.info(f"New block! Prevhash: {prevhash}")
                 update = True
 
             elif Interfaces.timestamper.time() - self.registry.last_update >= settings.MERKLE_REFRESH_INTERVAL:
-                log.info("Merkle update! Prevhash: %s" % prevhash)
+                log.info(f"Merkle update! Prevhash: {prevhash}")
                 update = True
 
             if update:

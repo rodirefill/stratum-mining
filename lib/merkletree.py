@@ -50,7 +50,7 @@ class MerkleTree:
         self.detail = detail
 
     def hash_steps(self):
-        if self._hash_steps == None:
+        if self._hash_steps is None:
             self._hash_steps = doublesha(''.join(self._steps))
         return self._hash_steps
 
